@@ -183,4 +183,27 @@ plotColData(sce, y = "percentERCC", x = "orig.ident")
 ```
 ![image](https://github.com/akhst7/Ewing-s-sarcoma-scRNAseq-Analysis-based-on-GSE243347/assets/3075799/951d4b1a-072a-481c-8530-b94603f43fee)
 
-**To be continued!!**
+It appears that a majority of cells in TM768 are extremely low quality. If a majority of cells are to be  removed, contributions of TM768 as a group certainly become insginificant.  It may be easier to remove all the cells in TM768 but at this point, they will be included.  
+If 3 MAD is used as a cutoff value, almost a half of the cell  will be removed, and only 4768 cell are retained. 
+```
+discard.ercc <- isOutlier(colData(sce.filtered.1), type = 'higher', nmads = 3)
+sce$discard.ercc.selected.nmad3<-discard.ercc
+plotColData(sce, y = "percentERCC", x = "orig.ident", color_by = "discard.ercc.selected.nmad3")+theme(axis.text.x =element_text(angle = 45, vjust = 1, hjust = 1 ))+ggtitle("MAD with Selected Batch Correction")+theme( plot.title = element_text(hjust = 0.5, size = 20))
+```
+![Rplot01](https://github.com/akhst7/Ewing-s-sarcoma-scRNAseq-Analysis-based-on-GSE243347/assets/3075799/263dcadb-40b6-4c15-8c38-87554b07a9e4)
+
+This simple approach basically is to determine outliers that are beyound 3 MAD.  Noticeably, the same cutoff %ERCC is applied to all the sample groups, although MAD values should be quite different among some groups by looking at the distribution of cells in each sample group.  Evidently, ```isOutlier``` without a particular argument does not distinguish batches/samples, thus all the cells will be merged into the one batch/sample.  To obtain more accuate batch/sample specific MAD values, ```batch=``` argument must be supplied.   
+```
+discard.ercc <- isOutlier(sce$altexps_ERCC_percent,type="higher", batch=sce$orig.ident, nmads = 3)
+```
+![Rplot 2](https://github.com/akhst7/Ewing-s-sarcoma-scRNAseq-Analysis-based-on-GSE243347/assets/3075799/36015148-a397-4de9-81b7-c1d31d78c694)
+
+The figure above shows potential outliers only in certain samples, particularly the samples that have relatively small proportion of cells with high %ERCC, indicating that sequecing in  a majority of cells in these samples are more than adequate. In contrast, other samples show distribution of cells with less than desirable %ERCC, yet these cells are not cosidered **outliers**. This happens because ```isOutlier``` assumes all the samples contain high quality cells.  In reality, this is not always the case.   To fix this uneven identification of outliers, ```isOutlier``` requires yet another argument, ```subset=``` which selects samples with visibly **cleaner** distributions of cells lower %ERCC, in other words, samples with high proportion of high quality cells, in this case, samples, ```"TM416", "TM417", "TM505", "TM548","TM549", "TM574", and "TM736."```  
+
+```
+discard.ercc <- isOutlier(sce$percentERCC,type="higher", batch=sce$orig.ident, nmads = 3, subset = sce$orig.ident %in%  c("TM416", "TM417", "TM505", "TM548","TM549", "TM574", "TM736"))
+```
+![Rplot02](https://github.com/akhst7/Ewing-s-sarcoma-scRNAseq-Analysis-based-on-GSE243347/assets/3075799/355f37e6-26c6-4890-835d-944f65208cf7)
+
+
+Futher processing reuslts in 4458 cells and it truned out, without going into the detail, that 4458 cells might not be sufficient for further analysis.  Demitional reduction, particularly UMAP suffered 
