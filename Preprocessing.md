@@ -206,4 +206,58 @@ discard.ercc <- isOutlier(sce$percentERCC,type="higher", batch=sce$orig.ident, n
 ![Rplot02](https://github.com/akhst7/Ewing-s-sarcoma-scRNAseq-Analysis-based-on-GSE243347/assets/3075799/355f37e6-26c6-4890-835d-944f65208cf7)
 
 
-Futher processing reuslts in 4458 cells and it truned out, without going into the detail, that 4458 cells might not be sufficient for further analysis.  Demitional reduction, particularly UMAP suffered 
+This reuslts in 4768 cells. Removing almost half of the total cells may be too excessibe, even though it sounds statiscally reasonable.  According to the first author, 9,537 wells(cell equivalnet) were recovered after the ERCC QC step, which is almost double the number of cells done here.  The discrepancy can be explained by the fact that the first author used the raw ERCC counts rather than %ERCC(normalized) and employed ```The Sharq pipeline``` https://www.biorxiv.org/content/10.1101/250811v2.full.  I have absolutely no issues with them using ```The Sharq pipeline``` which is designed particularly for flow soreted well based scRNAseq and reviewers did not have any issues, yet cells with high values of %ERCC or even raw counts suggest that substancial numbers of cells needed tobe removed.  The ERCC qc filter that they used seems a lot softer and MAD 3 filterraton demostrated here seems a bit too extreme in removeing cells.  
+
+I came up with unscientific yet visually acceptable cutoff valuee based on %ERCC using MAD 3.  By looking at a plot of RNA features and counts, a majority of low quality cells (TRUE) cells appear to be piling up at very low end of scales, agreeing with a fact that low quality cells typically have relatively lower number of RNA counts and types with higher %ERCC or ERCC counts.  
+
+![Rplot03](https://github.com/akhst7/Ewing-s-sarcoma-scRNAseq-Analysis-based-on-GSE243347/assets/3075799/38c95b32-3e13-4457-90d1-fda9a7c7edb7)
+
+Now, a violin plot of RNA features or counts  vs MAD 3 reject criterium shows a little hump at the bottom  of "FALSE" cells and a large disc at the bottom of the TRUE cells with a clear boundary.  If line is drwawn, a corresponding RNA feature of an intercept of the line is 500 features.  
+
+![Rplot 3](https://github.com/akhst7/Ewing-s-sarcoma-scRNAseq-Analysis-based-on-GSE243347/assets/3075799/fbbe5436-2c6e-4bb9-a418-74853ac26b10)
+
+Using RNA feature less than 500 as a filter criterium removes roughly 4000 cells and now the total number of the cell is 6434, which is acceptable for now. 
+
+```
+sce.500<-sce[, !sce$nFeature_RNA <=500]
+Ewing.su[, !Ewing.su$nFeature_RNA <= 500] ->Ewing.500.su
+```
+
+A next step is to remove doublets.  As mentioned above, doublet removal is done by the biocondactor pacakge, ```scDBlFinder```.  
+
+```
+sce.500<-scDblFinder(sce.500, samples = sce.500$orig.ident, BPPARAM = bp)
+```
+```scDblFinder``` comes with a ton of customerization but there are a few very important ones.  Those are listed in https://www.bioconductor.org/packages/release/bioc/html/scDblFinder.html 
+You can play with these parameters if you know what you are doing, thhough as suggested, default parameters of ```scDBlFinder`` works fine.  Of note, a ```sample``` parameter instructs ```scDBlFinder``` to treat the data file as a merged multiple sample file, while multiple samples increase the accuracy and precision of detecting doublets.  A ```bp``` paremter informs ```scDBlFinder``` to utilize a multi-thread or multi-core capbility of the computer. 
+
+```
+library(BiocParallel)
+MulticoreParam(18, RNGseed = 1234, progressbar = T)-> bp
+```
+There are 5 metadata column created by ```scDBlFinder```, of which the most relevant is ```scDblFinder.class```.  A column under ```scDblFinder.class``` denotes singlet vs doublet classification, and used to filter out doublets.  Values in other columns are for optimization of doublet detection. 
+
+```
+sce.500.nodbl<-sce.500[, sce.500$scDblFinder.class=="singlet"] or sce.500.nodbl<-sce.500[, !sce.500$scDblFinder.class=="doublet"]
+
+For Seurat:
+colData(sce.500)[,18]-> tmp
+names(tmp)<-colnames(sce.500)
+Ewing.500.su<-AddMetaData(object = Ewing.500.su, metadata = tmp, col.name = "scDblFinder.class")
+Ewing.500.nodbl.su<-Ewing.500.su[, Ewing.500.su$scDblFinder.class == "singlet"]
+```
+A scatter plot of RNA features vs counts show some odd cells. These cells have excessively large RNA features and/or counts.  For some reasons, these cells were not considered to be doublets, however, these will be removed for the rest of the analysis for obvious reasons.  
+
+![Rplot 5](https://github.com/akhst7/Ewing-s-sarcoma-scRNAseq-Analysis-based-on-GSE243347/assets/3075799/f9099606-1ab8-49cd-a25e-46c85384378a)
+
+```
+`%notin%` <- Negate(`%in%`)
+
+For SingleCellExperiment:
+sce.500.nodbl.su[, colnames(sce.500.nodbl.su) %notin% c("TM506_A18", "TM338_UNK", "TM506_UNK")]
+For Seurat
+Ewing.500.nodbl.su[, colnames(Ewing.500.nodbl.su) %notin% c("TM506_A18", "TM338_UNK", "TM506_UNK")]
+```
+Beacause of the curse of **S3 obj**, the simplest approach, ```sce.500.nodbl.su[, !c("TM506_A18", "TM338_UNK", "TM506_UNK")] or Ewing.500.nodbl.su[, !c("TM506_A18", "TM338_UNK", "TM506_UNK")] does not work. 
+
+
