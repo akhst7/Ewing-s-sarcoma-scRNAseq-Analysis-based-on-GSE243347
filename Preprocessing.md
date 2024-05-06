@@ -260,4 +260,4 @@ Ewing.500.nodbl.su[, colnames(Ewing.500.nodbl.su) %notin% c("TM506_A18", "TM338_
 ```
 Beacause of the curse of **S3 obj**, the simplest approach, ```sce.500.nodbl.su[, !c("TM506_A18", "TM338_UNK", "TM506_UNK")] or Ewing.500.nodbl.su[, !c("TM506_A18", "TM338_UNK", "TM506_UNK")] does not work. 
 
-
+The preprocessing does not end here. It tuned out that the data contained a significant number of duplicates, happened to be in the category of biotype 
