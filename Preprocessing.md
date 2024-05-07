@@ -254,11 +254,16 @@ A scatter plot of RNA features vs counts show some odd cells. These cells have e
 `%notin%` <- Negate(`%in%`)
 
 For SingleCellExperiment:
-sce.500.nodbl.su[, colnames(sce.500.nodbl.su) %notin% c("TM506_A18", "TM338_UNK", "TM506_UNK")]
+sce.500.nodbl[, colnames(sce.500.nodbl) %notin% c("TM506_A18", "TM338_UNK", "TM506_UNK")] ->sce.500.nodbl.nooddcells
 For Seurat
-Ewing.500.nodbl.su[, colnames(Ewing.500.nodbl.su) %notin% c("TM506_A18", "TM338_UNK", "TM506_UNK")]
+Ewing.500.nodbl[, colnames(Ewing.500.nodbl) %notin% c("TM506_A18", "TM338_UNK", "TM506_UNK")] ->Ewing.500.nodbl.nooddcells
 ```
 Beacause of the curse of **S3 obj**, the simplest approach, ```sce.500.nodbl.su[, !c("TM506_A18", "TM338_UNK", "TM506_UNK")] or Ewing.500.nodbl.su[, !c("TM506_A18", "TM338_UNK", "TM506_UNK")] does not work. 
 
-The preprocessing does not end here. It tuned out that the data contained a significant number of duplicates, which happened to be the "lncRNA, and rRNA"  in the category of **Ensembl biotype** known as **misc_RNA**.  
+The preprocessing does not end here. It tuned out that the data contained a significant number of duplicates, which happened to be the "lncRNA, and rRNA"  in the category of **Ensembl biotype** known as **misc_RNA**.  But, the first thing is to take a look at gene names.  
 
+genename<-rownames(Ewing.500.nodbl.nooddcells)
+length(genename)
+[1] 48156
+
+Now, names of genes are composed of the Ensembl ID and gene symbol, for example  "ENSG00000000003--TSPAN6".  This is rather unorthodox gene names since in most cases, there are separate slots for the Ensembl ID and the symbol.  I guess authors did this to avoid gene symbol duplication but this type of designating gene symbol is troubling 
