@@ -266,4 +266,4 @@ genename<-rownames(Ewing.500.nodbl.nooddcells)
 length(genename)
 [1] 48156
 
-Now, names of genes are composed of the Ensembl ID and gene symbol, for example  "ENSG00000000003--TSPAN6".  This is rather unorthodox gene names since in most cases, there are separate slots for the Ensembl ID and the symbol.  I guess authors did this to avoid gene symbol duplication but this type of designating gene symbol is troubling 
+Now, names of genes are composed of the Ensembl ID and gene symbol, for example  "ENSG00000000003--TSPAN6".  This is rather unorthodox gene names since in most cases, there are separate slots for the Ensembl ID and the symbol.  I guess authors did this to avoid gene symbol duplication but this type of designating gene symbol is troubling for downstream analysis particularly cell annotation and DEGs. In fact, in trial DEGs, there is gene named, **"Y-RNA"** showed up multiple times in the list go top20 DEGs per clusters. It turns out that "Y-RNA" is a lnkRNA 
