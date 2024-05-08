@@ -261,9 +261,129 @@ Ewing.500.nodbl[, colnames(Ewing.500.nodbl) %notin% c("TM506_A18", "TM338_UNK", 
 Beacause of the curse of **S3 obj**, the simplest approach, ```sce.500.nodbl.su[, !c("TM506_A18", "TM338_UNK", "TM506_UNK")] or Ewing.500.nodbl.su[, !c("TM506_A18", "TM338_UNK", "TM506_UNK")] does not work. 
 
 The preprocessing does not end here. It tuned out that the data contained a significant number of duplicates, which happened to be the "lncRNA, and rRNA"  in the category of **Ensembl biotype** known as **misc_RNA**.  But, the first thing is to take a look at gene names.  
-
+```
 genename<-rownames(Ewing.500.nodbl.nooddcells)
 length(genename)
 [1] 48156
+```
+Now, names of genes are composed of the Ensembl ID and gene symbol, for example  "ENSG00000000003--TSPAN6".  This is rather unorthodox gene names since in most cases, there are separate slots for the Ensembl ID and the symbol.  I guess authors did this to avoid gene symbol duplication but this type of designating gene symbol is troubling for downstream analysis particularly cell annotation and DEGs. In fact, in trial DEGs, there is gene named, **"Y-RNA"** showed up multiple times in the list go top20 DEGs per clusters. It turns out that "Y-RNA" is,  **ncRNA** and in Ensembl, is in the category of **Misc_RNA**.  These genes are non-coding genes including **lncRNA** that play roles in expression regulation of protein coding genes.  As in the example below, it has an Ensemble gene designation, and there are many of them but exactly how many are there in the data set ?
+![Screenshot 2024-05-07 at 1 37 36 PM](https://github.com/akhst7/Ewing-s-sarcoma-scRNAseq-Analysis-based-on-GSE243347/assets/3075799/096429a6-05c8-4ac8-9a5b-b0d4fba60b83)
 
-Now, names of genes are composed of the Ensembl ID and gene symbol, for example  "ENSG00000000003--TSPAN6".  This is rather unorthodox gene names since in most cases, there are separate slots for the Ensembl ID and the symbol.  I guess authors did this to avoid gene symbol duplication but this type of designating gene symbol is troubling for downstream analysis particularly cell annotation and DEGs. In fact, in trial DEGs, there is gene named, **"Y-RNA"** showed up multiple times in the list go top20 DEGs per clusters. It turns out that "Y-RNA" is a lnkRNA 
+Within the total genes registered in Ewing.500.nodbl.nooddcells, 48156, **"Y-RNA"** count is 583, meaning each of these has **"Y-RNA"** as gene symbols but has distinct Ensembl IDs.  Besides **"Y-RNA"**, there are other 133 genes similar to **"Y-RNA"**, belonging to Ensembl's Misc_RNA and most of them are **lncRNA**;  
+```
+which(str_extract(genename, pattern) %>% duplicated()) %>% genename[.] %>% str_extract(., pattern) %>% unique() -> genename.unique
+```
+A ```genename.unique``` is a collection of unique gene symbols of all the duplicates; 
+```
+> genename.unique
+  [1] "Y-RNA"           "SNORA2"          "SNORA72"         "SNORA26"         "Metazoa-SRP"     "RGS5"            "U3"             
+  [8] "snoU13"          "ACA64"           "SNORA31"         "SNORA67"         "SNORA73"         "PDXDC2P"         "LINC01481"      
+ [15] "U1"              "BMS1P4"          "CYB561D2"        "COG8"            "RNU11"           "U6"              "SNORD45"        
+ [22] "SNORA27"         "SNORA25"         "SNORA4"          "SNORA51"         "SNORA40"         "DNAJC9-AS1"      "SPATA13"        
+ [29] "LINC01598"       "LINC01422"       "SNORD63"         "GOLGA8M"         "EMG1"            "POLR2J4"         "uc-338"         
+ [36] "SNORA63"         "SNORA7"          "SNORA24"         "SNORD38"         "SNORA48"         "SNORD113"        "SNORA79"        
+ [43] "LINC00484"       "SNORD59"         "SCARNA20"        "SOGA3"           "SFTA3"           "LINC01238"       "LINC01115"      
+ [50] "7SK"             "U7"              "DLEU2-2"         "DGCR5"           "RABGEF1"         "C2orf81"         "SNORA9"         
+ [57] "U8"              "SNORD46"         "SNORD42"         "SNORA62"         "SNORA19"         "LINC01347"       "SNORA11"        
+ [64] "snoU109"         "SNORA58"         "SCARNA21"        "SNORD56"         "SNORD74"         "SNORD67"         "NBPF13P"        
+ [71] "SCARNA15"        "SNORA81"         "FAS-AS1"         "MATR3"           "SNORA75"         "SNORD112"        "SNORA64"        
+ [78] "SNORD70"         "SNORD11"         "RPS23P5"         "SNORA33"         "SNORA20"         "SNORA74"         "U4"             
+ [85] "SNORD116"        "SNORA22"         "SNORA8"          "SNORA42"         "5S-rRNA"         "SNORA3"          "SNORD77"        
+ [92] "MAL2"            "C2orf61"         "SNORA70"         "SNORD81"         "SNORA69"         "SNORA12"         "SNORA77"        
+ [99] "SNORD75"         "SNORA57"         "SCARNA18"        "SCARNA6"         "SCARNA16"        "OR7E47P"         "DLEU2-6"        
+[106] "DLEU2-1"         "DLEU2-5"         "RAET1E-AS1"      "SNORD30"         "U2"              "SNORA43"         "SNORA30"        
+[113] "SNORA1"          "SNORA68"         "SNORD5"          "SNORA35"         "SCARNA17"        "SNORD39"         "snoMe28S-Am2634"
+[120] "PROX1-AS1"       "SNORA38"         "SNORD66"         "snoU2-19"        "SNORD65"         "SCARNA11"        "HYMAI"          
+[127] "SNORA76"         "SNORA46"         "5-8S-rRNA"       "ALG1L9P"         "CTSLP2"          "SNORA18"         "Vault"
+```
+A followin plot shows the extent of duplication of these;
+```
+sapply(genename.unique, function(x){grep(x, rownames(Ewing.join.noERCC.su)) %>% length()})->genename.unique.counts
+data.table(counts=genename.unique.counts, name=names(genename.unique.counts))->tmp
+ggplot(tmp)+geom_bar(aes(x=reorder(name, counts, decreasing=T), y=counts), stat="identity")+theme(axis.text.x = element_text(face="bold", angle = 90, size = 5, hjust = 0.95, vjust = 0.2))+scale_y_continuous(expand = c(0, 0))
+```
+![Rplot01 4](https://github.com/akhst7/Ewing-s-sarcoma-scRNAseq-Analysis-based-on-GSE243347/assets/3075799/20586a90-8f95-4440-8ae8-0571f1398b11)
+Again, as mentioned earlier, these are not quite multiplicates of the same gene  but rather they are various isforms of the same gene; for instance, there are approximately 800 isoforms of U6RNA.  For the downstream analysis, particularly the DGE analysis, they will predominate over low abundant protein conding RNAs of significance.  They are not  ***noises*** in a biological sense and they may well have some biological importance.  However, it may be best to analyze them separately from the protein conding RNAs.
+
+Before removing these genes from the latest Ewing Seurat obj, ```Ewing.500.nodbl.nooddcells``` there are a few protein coding RNA, mRNAs in ```gene.unique```, and this gets a bit complicated as follows;
+```
+library(AnnotationHub)
+ah<-AnnotationHub()
+> ah
+AnnotationHub with 71308 records
+# snapshotDate(): 2024-04-29
+# $dataprovider: Ensembl, BroadInstitute, UCSC, ftp://ftp.ncbi.nlm.nih.gov/gene/DATA/, Haemcode, FANTOM5,DLRP,IUPHAR,HPRD,STRING,SWISSPROT,...
+# $species: Homo sapiens, Mus musculus, Drosophila melanogaster, Rattus norvegicus, Bos taurus, Pan troglodytes, Danio rerio, Gallus gallus...
+# $rdataclass: GRanges, TwoBitFile, BigWigFile, EnsDb, Rle, OrgDb, SQLiteFile, ChainFile, TxDb, Inparanoid8Db
+# additional mcols(): taxonomyid, genome, description, coordinate_1_based, maintainer, rdatadateadded, preparerclass, tags,
+#   rdatapath, sourceurl, sourcetype 
+# retrieve records with, e.g., 'object[["AH5012"]]' 
+
+             title                                 
+  AH5012   | Chromosome Band                       
+  AH5013   | STS Markers                           
+  AH5014   | FISH Clones                           
+  AH5015   | Recomb Rate                           
+  AH5016   | ENCODE Pilot                          
+  ...        ...                                   
+  AH116725 | TENET_consensus_open_chromatin_regions
+  AH116726 | TENET_consensus_promoter_regions      
+  AH116727 | ENCODE_dELS_regions                   
+  AH116728 | ENCODE_pELS_regions                   
+  AH116729 | ENCODE_PLS_regions
+```
+I am looking for an Ensemble database;
+```
+> query(ah, c("Ensembl", "Homo sapiens"))
+AnnotationHub with 287 records
+# snapshotDate(): 2024-04-29
+# $dataprovider: Ensembl, BioMart, FANTOM5,DLRP,IUPHAR,HPRD,STRING,SWISSPROT,TREMBL,ENSEMBL,CELLPHONEDB,BADERLAB,SINGLECELLSIGNALR,HOMOLOGE...
+# $species: Homo sapiens, homo sapiens
+# $rdataclass: GRanges, TwoBitFile, EnsDb, data.frame, SQLiteFile, list, OrgDb
+# additional mcols(): taxonomyid, genome, description, coordinate_1_based, maintainer, rdatadateadded, preparerclass, tags,
+#   rdatapath, sourceurl, sourcetype 
+# retrieve records with, e.g., 'object[["AH5046"]]' 
+
+             title                                  
+  AH5046   | Ensembl Genes                          
+  AH5160   | Ensembl Genes                          
+  AH5311   | Ensembl Genes                          
+  AH5434   | Ensembl Genes                          
+  AH5435   | Ensembl EST Genes                      
+  ...        ...                                    
+  AH113665 | Ensembl 110 EnsDb for Homo sapiens     
+  AH113914 | LRBaseDb for Homo sapiens (Human, v006)
+  AH116291 | Ensembl 111 EnsDb for Homo sapiens     
+  AH116542 | LRBaseDb for Homo sapiens (Human, v007)
+  AH116710 | org.Hs.eg.db.sqlite
+```
+Ensembles 111 is the latest database for human genes, and getting EnsID and gene symbol can be down as follows;
+```
+select(ensHu111, keys = GenebiotypeFilter("protein_coding"), columns = "SYMBOL") -> protein.name
+head(protein.name)
+   SYMBOL    GENEBIOTYPE
+1         protein_coding
+2    A1BG protein_coding
+3    A1CF protein_coding
+4     A2M protein_coding
+5   A2ML1 protein_coding
+6 A3GALT2 protein_coding
+> nrow(protein.name)
+[1] 19458
+```
+There are almost 20,000 mRNA entries in the latest EnsDb, and to find those shared by ```protein.name``` and ```genename.unique``` is doen by a following script;
+```
+intersect(genename.unique, protein.name$SYMBOL) ->s
+> s
+ [1] "RGS5"     "CYB561D2" "COG8"     "SPATA13"  "GOLGA8M"  "EMG1"     "SOGA3"    "SFTA3"    "RABGEF1"  "C2orf81"  "MATR3"    "MAL2"
+```
+12 coding genes are present in ```genename.unique``` and they must removed first.  
+```
+genename.unique[which(genename.unique %notin% s)] ->u
+genename[which(str_extract(genename, pattern) %notin% u)] ->v
+Ewing.join.noERCC.su[rownames(Ewing.join.noERCC.su) %in% v, ] ->Ewing.join.noERCC.protincoding.su
+'''
+The preprocessing step is finished.  One final comment in this section is that authors did not go through these steps described here.  The preprocessing step described here is somewhat more rigrous than what they did in their publications, however, this is by no means that their approach is inadequate.   
+
+
+
