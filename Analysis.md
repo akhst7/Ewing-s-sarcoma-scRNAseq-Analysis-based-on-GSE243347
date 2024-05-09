@@ -1,1 +1,1 @@
-***Dimentional Reduction***
+**Dimentional Reduction**
