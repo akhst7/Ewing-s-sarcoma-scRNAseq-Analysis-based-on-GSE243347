@@ -377,13 +377,12 @@ intersect(genename.unique, protein.name$SYMBOL) ->s
 > s
  [1] "RGS5"     "CYB561D2" "COG8"     "SPATA13"  "GOLGA8M"  "EMG1"     "SOGA3"    "SFTA3"    "RABGEF1"  "C2orf81"  "MATR3"    "MAL2"
 ```
-12 coding genes are present in ```genename.unique``` and they must removed first.  
+12 coding genes are present in ```genename.unique``` and they must be removed.  
 ```
 genename.unique[which(genename.unique %notin% s)] ->u
 genename[which(str_extract(genename, pattern) %notin% u)] ->v
-Ewing.join.noERCC.su[rownames(Ewing.join.noERCC.su) %in% v, ] ->Ewing.join.noERCC.protincoding.su
-'''
-The preprocessing step is finished.  One final comment in this section is that authors did not go through these steps described here.  The preprocessing step described here is somewhat more rigrous than what they did in their publications, however, this is by no means that their approach is inadequate.   
+Ewing.join.noERCC.su[rownames(Ewing.join.noERCC.su) %in% v, ] ->Ewing.join.noERCC.protincoding.su 
+```
 
-
-
+The preprocessing step is now finished.  One final comment in this section is that authors did not go through these steps described here.  The preprocessing step described here is somewhat more rigrous than what they did in their publications, however, this is by no means that their preprocessig step is inadequate.
+Of note, ribosome RNAs are deleted from their downstream analysis.  This was intentionally done because like mitochondrial transcripts, quite a number of ribosome transcripts are significantly more abundant than coding transcipts which otherwise interfere with and have a significant impact on a following DEG analysis.  Although this may be a common practice for some groups, I would suggest otherwise.  Arguably, not all ribosome transcripts are housekeeping and are by no means ubiquitously expressed; they do exibit the element of cell type specific expression. Thus,  importance of ribosome transcripts as DEGs should not be disregarded. 
