@@ -40,5 +40,80 @@ PCA is really a key step for the rest of analysis proedures and an one critital 
 
 ![Elbow](https://github.com/akhst7/Ewing-s-sarcoma-scRNAseq-Analysis-based-on-GSE243347/assets/3075799/939d7297-9406-44fc-bb81-15adaa41e575)
 
-Right around PC 30, the plot seems to hit a plateau, which could be used as a maximum number of dimetions for the rest of steps.  The higher PC values could be used but practicaly, they will not make significant differences.  
+An above plot seems to show right after PC 30, a line of points is hiting a plateau, and thus, PC 30 could be used as a maximum number of dimetions for the rest of steps.  Arguably the higher or lower PC values (than PC30) could be used but practicaly, they will not make significant differences.
+
+![PC30](https://github.com/akhst7/Ewing-s-sarcoma-scRNAseq-Analysis-based-on-GSE243347/assets/3075799/79a2d3a5-f5d7-4d87-af6d-394e049813fe)
+
+![PC49andPC50](https://github.com/akhst7/Ewing-s-sarcoma-scRNAseq-Analysis-based-on-GSE243347/assets/3075799/8ac8048d-022d-4d2c-8717-789f076d2a6c)
+
+A heatplot PCA at PC30 shows very vague distinction betwwen high and low expression genes but epression of some of these genes are still polarized to some cells.  However, at PC49 and PC50, there is absolutely no distinguishing features in any of the cells.  
+
+There are some interesting things about the elbow plot.  Now, it is possible to fit a curve over these points;
+```
+Using a mgcv package's gam function to fit the curve over those points.  
+library(mgcv)
+ggplot(elbow$data, aes(dims, stdev))+geom_point()+geom_smooth(method = "gam")
+```
+![elbow gam](https://github.com/akhst7/Ewing-s-sarcoma-scRNAseq-Analysis-based-on-GSE243347/assets/3075799/a9456bec-6ccf-4336-a652-f636da181363)
+
+The fitted curve looks great.  Now,lets just predict values of ```stdev``` beyond PC 50;
+```
+elbow.gam<-gam(stdev ~ s(dims, bs="cs"), data = elbow$data)
+data.frame(dims=seq(100, 1000, by=100))->df
+predict(elbow.gam, newdata = df)
+
+> predict(elbow.gam, newdata = df)
+          1           2           3           4           5           6           7           8           9          10          11 
+ 1.13387599 -0.06106273 -1.25600146 -2.45094019 -3.64587891 -4.84081764 -6.03575637 -7.23069509 -8.42563382 -9.62057254  4.54860938
+```
+As number of ```dims``` increases, ```stdev``` decreases, and this is really expected, however, right around PC 100 and beyond, ```stdev``` gets negative values, and ```stdev``` never gets the negative value.  Strage.  
+
+Once PCA is done, the rest of the step is pretty straightforward.  A following step could be done in any order but lets' figure out number of potential clusters.  The first thing to do is to figure out ```cell neighbors```.
+```
+Ewing.su<-FindNeighbors(Ewing.su, reduction = "PCA", dims = 1:30)
+```
+Then, find clusters among cells. 
+```
+Ewing.su<-FindClusters(merged.su, graph.name = "RNA_snn", resolution = c(0.7, 0.8, 1.0, 1.5), algorithm = 4, method = "igraph")
+```
+This will create  and assign cluster IDs to each cells.  Seurat stores the cluster info by creating new metadata columns, named ```RNA_snn_res``` as follows ;
+```
+> str(merged.su[[]])
+'data.frame':	6110 obs. of  22 variables:
+ $ orig.ident         : chr  "TM338" "TM338" "TM338" "TM338" ...
+ $ nCount_RNA         : num  11769 4075 5127 2343 2263 ...
+ $ nFeature_RNA       : int  3123 2028 2154 1105 963 2373 1010 1341 2273 1077 ...
+ $ harmony_clusters   : chr  "18" "7" "7" "28" ...
+ $ seurat_clusters    : Factor w/ 24 levels "1","2","3","4",..: 13 3 3 15 2 13 16 7 7 2 ...
+ $ harmony_clusters_1 : chr  "13" "5" "5" "20" ...
+ $ patientID          : chr  "ES-024" "ES-024" "ES-024" "ES-024" ...
+ $ tumor_site         : chr  "Femur" "Femur" "Femur" "Femur" ...
+ $ percentMT          : num  7.09 11.07 9.25 23.47 6.14 ...
+ $ cell.sorted        : chr  "Live" "Live" "Live" "Live" ...
+ $ sample.type        : chr  "Resection" "Resection" "Resection" "Resection" ...
+ $ percentRB          : num  1.22 3.04 7.41 3.16 14.18 ...
+ $ percentERCC        : num  2.93 7.75 9.3 9.43 27.49 ...
+ $ scDblFinder.class  : chr  "singlet" "singlet" "singlet" "singlet" ...
+ $ RNA_snn_res.0.7    : Factor w/ 20 levels "1","2","3","4",..: 7 3 3 7 1 7 17 8 8 1 ...
+ $ RNA_snn_res.0.8    : Factor w/ 20 levels "1","2","3","4",..: 6 3 3 6 1 6 17 8 8 1 ...
+ $ RNA_snn_res.1      : Factor w/ 20 levels "1","2","3","4",..: 6 3 3 6 1 6 17 8 8 1 ...
+ $ RNA_snn_res.1.5    : Factor w/ 24 levels "1","2","3","4",..: 5 3 18 5 1 5 19 7 7 1 ...
+```
+Now, create UMAP;
+```
+Ewing.su<-RunUMAP(Ewing.su, dims = 1:30, reduction = "PCA", reduction.name = "unitegrated.umap")
+```
+It's time to see the UMAP of Ewing.su;
+```
+DimPlot(merged.su, reduction = "unitegrated.umap", group.by = "RNA_snn_res.1.5", label = F, label.size = 7)+scale_color_manual(values = P40)+guides(color = guide_legend(title = "Sorted Sample ", size=12, ncol = 2,override.aes = list(size = 5), theme = theme(legend.title = element_text(hjust = 0.5))))+labs(title = "Ewing UMAP Unitegrated_RNA_snn_res.1.5")+theme(plot.title=element_text(hjust = 0.5, size = 20))
+```
+![UMAP_unitegrated](https://github.com/akhst7/Ewing-s-sarcoma-scRNAseq-Analysis-based-on-GSE243347/assets/3075799/53b19fb7-839a-418b-a92f-76b4ee923c7e)
+
+Chainging ```group_by``` argument from "seurat_clusters" to "orig.ident" recated the same UMAP with different grouping of cells;
+
+![Ewing_UMAP_unitegrated2](https://github.com/akhst7/Ewing-s-sarcoma-scRNAseq-Analysis-based-on-GSE243347/assets/3075799/b4a0af90-85a0-42f1-a0f9-50b98088db9c)
+
+
+
+
 
