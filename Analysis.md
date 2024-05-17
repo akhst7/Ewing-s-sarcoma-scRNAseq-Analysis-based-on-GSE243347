@@ -113,6 +113,8 @@ Chainging ```group_by``` argument from "seurat_clusters" to "orig.ident" recated
 
 ![Ewing_UMAP_unitegrated2](https://github.com/akhst7/Ewing-s-sarcoma-scRNAseq-Analysis-based-on-GSE243347/assets/3075799/b4a0af90-85a0-42f1-a0f9-50b98088db9c)
 
+These UMAPs are based off the unitegrated data across different samples/batches (e.g. TM786, ...etc) and to alleviate batch and sample effects, sequencing data should be integrated, so that the exact same cell types with undistinguishable gene expression profiles from distinct samples will fall into the same position hence, the cluster in UMAP.  Despite the fact that this UMAP is not based on the integrated data, except some samples, a majoriy of samples are "mixed" well in clusters.  There are better more obvious exmaples of UMAP based on the unitegrated data in the Seurat tutorial and elsewhwere. 
+
 
 
 
