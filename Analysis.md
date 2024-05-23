@@ -115,6 +115,27 @@ Chainging ```group_by``` argument from "seurat_clusters" to "orig.ident" recated
 
 These UMAPs are based off the unitegrated data across different samples/batches (e.g. TM786, ...etc) and to alleviate batch and sample effects, sequencing data should be integrated, so that the exact same cell types with undistinguishable gene expression profiles from distinct samples will fall into the same position hence, the cluster in UMAP.  Despite the fact that this UMAP is not based on the integrated data, except some samples, a majoriy of samples are "mixed" well in clusters.  There are better more obvious exmaples of UMAP based on the unitegrated data in the Seurat tutorial and elsewhwere. 
 
+Integrating differnet layers (distinct batches and samples (in this case)) is pretty simple under a Seurat V5's new data integration pipe line.  
+```
+merged.su<-IntegrateLayers(merged.su, method = HarmonyIntegration, orig.reduction = "PCA", new.reduction="integrated.harmony")
+```
+It is used be a bit more involved in the previous versions but now the integration can be run in the one liner.  Also, the same line can be used to apply different integration methods (e.g. CCA, Harmony, RPCA, ...).  
+You can run Harmony manually without using the Seurat's integration line.  All needed is the PCA.  
+'''
+RunHarmony(merged.su[["PCA"]]@cell.embeddings, merged.su[[]], "orig.ident", early_stop=F,  lambda=NULL, plot_convergence = F, nclust=50)->tm1
+```
+An advantage  of this step is to run a quick diagnostic on the peformance of Harmony by setting ```early_stop=T``` and ```plot_convergence = TRUE```. This termiates ```RunHarmony`` at 10the cycle. A resulting plot looks like below;
+![harmony](https://github.com/akhst7/Ewing-s-sarcoma-scRNAseq-Analysis-based-on-GSE243347/assets/3075799/1fd64702-7439-4d20-9a4c-c9078b2dea1c)
+As seen in the plot, after 6 cycle, integration seems to be converged to a single entity, meaning ```nclust=50``` running 50 cycles of integration steps will not necessary give a superior results. A manually generated Hamrnomy integration set is embedded into the Seurat obj as a reduction obj as follows;
+```
+merged.su[["harmony.pca"]]<-CreateDimReducObject(embeddings = "tm1", key = "harmonyPCA_", assay = DefaultAssay(merged.su))
+```
+After this, it is necessary to run ```FindNeighbors```, ```FindClusters```, and ```RunUMAP``` again, and plot the new UMAP based on the Harmony integration by Dimplot specifying a name of the DimRed created by ```RunUMAP```.
+
+![Harmony_Umap_with clusters](https://github.com/akhst7/Ewing-s-sarcoma-scRNAseq-Analysis-based-on-GSE243347/assets/3075799/6af2a928-2be3-4d01-b9ec-ce1b44163736)
+
+
+
 
 
 
