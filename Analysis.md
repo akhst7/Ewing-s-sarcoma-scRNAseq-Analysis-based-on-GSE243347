@@ -130,7 +130,19 @@ As seen in the plot, after 6 cycle, integration seems to be converged to a singl
 ```
 Ewing.su[["harmony.pca"]]<-CreateDimReducObject(embeddings = "tm1", key = "harmonyPCA_", assay = DefaultAssay(Ewing.su))
 ```
-After this, it is necessary to run ```FindNeighbors```, ```FindClusters```, and ```RunUMAP``` again, and plot the new UMAP based on the Harmony integration by Dimplot specifying a name of the DimRed created by ```RunUMAP```.
+After this, it is necessary to run ```FindNeighbors```, ```FindClusters```, and ```RunUMAP``` again, and plot the new UMAP based on the Harmony integration by Dimplot specifying a name of the DimRed created by ```RunUMAP```.  A following mod DimPlot will generate the UMAP below.  
+```
+DimPlot(merged.su, reduction = "integrated.harmony.umap", group.by = "orig.ident")+scale_color_manual(values = p40)+guides(col = guide_legend(
+title = "Orig.Ident",
+size=12,
+ncol = 1,
+override.aes = list(size = 5),theme = theme(legend.title = element_text(hjust = 0.5))))+
+labs(title = "Ewing UMAP Integrated Orig.Ident")+
+theme(plot.title=element_text(hjust = 0.5, size = 20))
+```
+![HamonryIntegratedUmap](https://github.com/akhst7/Ewing-s-sarcoma-scRNAseq-Analysis-based-on-GSE243347/assets/3075799/45ec22c8-8fa3-4c83-b16a-5986d9dd5f1c)
+
+How about a UMAP by the cluster ? 
 ![Harmony_Umap_with clusters](https://github.com/akhst7/Ewing-s-sarcoma-scRNAseq-Analysis-based-on-GSE243347/assets/3075799/6af2a928-2be3-4d01-b9ec-ce1b44163736)
 As noticed, a figure above is different from others created by Suerat's ```DimPlot```.  Actually, this figure is manually created by using ```ggplot2```and ```ggrepel```.  The reason why this was done is to simply to accentuate location of each clusters on the UMAP.  In many occasions, it is not always straightforward to see boundaries of clusters and **3D ball** shape helps to see the tangible pile-up of the point.  At any rate, the number indicates the cluster levels, and there are 23 clusters.  In the previous **unitegrated** UMAP, there are 24 clusters.  Integration definitely influences the neighboring and clustering procedures.  A script for creating this figure is as follows;
 ```
