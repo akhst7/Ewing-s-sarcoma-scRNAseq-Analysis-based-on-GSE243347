@@ -174,3 +174,4 @@ ggplot(umap.dt, aes(integratedharmonyumap_1,integratedharmonyumap_2))+
 This pretty much concludes this sectioin.  The next section will be about ```differential gene expression```. 
 
 ## Differential Gene Expression
+Differnetial gene expression (DGE) in a SueratV5 obj could be easily done but the ```layers``` of the obj must be joined before DGE is calculated.  Joining layers of the V5 obj is very simple;
