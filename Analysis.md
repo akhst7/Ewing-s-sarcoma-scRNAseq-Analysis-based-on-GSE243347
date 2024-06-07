@@ -175,3 +175,37 @@ This pretty much concludes this sectioin.  The next section will be about ```dif
 
 ## Differential Gene Expression
 Differnetial gene expression (DGE) in a SueratV5 obj could be easily done but the ```layers``` of the obj must be joined before DGE is calculated.  Joining layers of the V5 obj is very simple;
+```
+Ewing.joined.su<-JoinLayers(Ewing.su)
+```
+Then, DGE by clusters is calcurated by ;
+```
+1. FindAllMarkers(Ewing.joined.su, assay = "RNA", logfc.threshold = 0.5, only.pos = T) %>% setDT() -> all.markers.wilcox.dt
+2. FindAllMarkers(Ewing.joined.su, assay = "RNA", logfc.threshold = 0.5, only.pos = T, test.use = "MAST") %>% setDT() -> all.markers.MAST.dt
+```
+The first line above is DGE calcuration by using ```wilcoxon signed rank sum``` whereas the second line uses ```MAST (https://github.com/RGLab/MAST) ```.  ```MAST``` is definitely more sophisticated than ```wilcoxon``` by allowing ```the mixed model``` for covariate corrections, however, having the sophisticated algorithm does not always mean the best for DGE derivation.  
+The next step is to generate a list of top20 DGEs by clusters based off the DGE table with either ```MAST``` or ```wilcoxon```;
+```
+library(data.table)
+setDTthreads(threads = 20)
+all.markers.wilcox.dt[, c("Ensembl_ID", "Symbol") := tstrsplit(all.markers.wilcox.dt$gene, "--", keep = c(1, 2))]
+all.markers.MAST.dt[, c("Ensembl_ID", "Symbol") := tstrsplit(all.markers.MAST.dt$gene, "--", keep = c(1, 2))]
+all.markers.wilcox.dt[order(p_val_adj, avg_log2FC), .(Ensembl_ID, Symbol), cluster][order(cluster), head(.SD, 20), cluster]->Top20.wilcox.dge
+all.markers.MAST.dt[order(p_val_adj, avg_log2FC), .(Ensembl_ID, Symbol), cluster][order(cluster), head(.SD, 20), cluster]->Top20.MAST.dge
+Top20.MAST.dge[, ID :=rep(1:20, 23)]
+Top20.wilcox.dge[, ID :=rep(1:20, 23)]
+dcast.data.table(Top20.MAST.dge, ID ~ cluster, value.var = "gene") -> top20.genelist.MAST
+dcast.data.table(Top20.MAST.dge, ID ~ cluster, value.var = "Symbol") -> top20.genelist.MAST
+library(kableExtra)
+top20.genelist.MAST %>% kbl() %>% kable_classic(full_width=F, font_size=12, html_font = "Arial Narrow") %>% row_spec(0, angle = 0, bold = T, align = "c")
+```
+The list of the top20 DGE table looks as follows;
+### Wilcoxon
+![image](https://github.com/akhst7/Ewing-s-sarcoma-scRNAseq-Analysis-based-on-GSE243347/assets/3075799/db070b36-0c5b-4b7a-a622-a4f2b24abb43)
+
+### MAST
+![Rplot](https://github.com/akhst7/Ewing-s-sarcoma-scRNAseq-Analysis-based-on-GSE243347/assets/3075799/33c21021-2e46-4ca0-9e8a-92ba661305f5)
+
+There is one issue with these table; a majority of top20 genes in Cluster 16 are mitochondrial transcripts.  This necessitates a further investigation as to what cells in the cluster 16 are and whether these cells should be removed from the dataset for the downstream analysis.  
+
+
