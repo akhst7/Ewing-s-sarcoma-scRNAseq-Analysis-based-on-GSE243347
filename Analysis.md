@@ -208,4 +208,16 @@ The list of the top20 DGE table looks as follows;
 
 There is one issue with these table; a majority of top20 genes in Cluster 16 are mitochondrial transcripts.  This necessitates a further investigation as to what cells in the cluster 16 are and whether these cells should be removed from the dataset for the downstream analysis.  
 
+Quick examination of the Top20 DEG tables cleary points an one issue.  Top 19 DEGs of the cluster 16 is all MT transcripts.  
+![Rplot01](https://github.com/akhst7/Ewing-s-sarcoma-scRNAseq-Analysis-based-on-GSE243347/assets/3075799/bfabec0b-9e33-41af-9dca-275f682d8b07)
+This raises a possibility that a majority of cells in the cluster 16 are apoptotic.  If this is the case, cells in the cluster must be removed, which is quite reasonable if dealing with cells in  non-cancerous, normal tissues.  However, cells in a cancerous tissue  or any tissues with high metabolic activity (e.g. skeletal and cardiac muscle, and tumor nodule) can express higher than average amount of MT transcripts.  These cells thus represent Ewing tumor cells (or possibly cancer stem cells) that are naturally undergoing high metabolic activaty.  
+Looking at top50 genes of the cluster 16, non-MT transcripts starts poping up.  
+```
+> all.markers.MAST.dt[cluster==16, Symbol][1:50]
+ [1] "MT-ATP6"         "MT-ND1"          "MT-ND4"          "MT-ND3"          "MT-CYB"          "MT-ND2"          "MT-RNR2"         "MT-CO3"          "MT-ATP8"         "MT-ND4L"         "MT-ATP6-cluster"
+[12] "MT-CO2"          "MT-RNR1"         "MTATP6P1"        "MTND1P23"        "MT-ND5"          "MTCO1P12"        "MTND2P28"        "MTND4P12"        "SRRM1"           "CHD8"            "ORC5"           
+[23] "MTRNR2L1"        "BRD3"            "MT-CO1"          "TYK2"            "HERC1"           "GTF2IRD1"        "DLG1"            "NHLRC3"          "MTCO1P40"        "BAD"             "TJAP1"          
+[34] "JAGN1"           "PRRC2C"          "GATAD1"          "XPNPEP3"         "SLC7A8"          "KIAA0430"        "INPPL1"          "RBMS2"           "CTSB"            "BAZ2B"           "CTSD"           
+[45] "PDCL"            "RAPGEF2"         "EDC4"            "PEAK1"           "P3H4"            "MTND4P24"
+```
 
