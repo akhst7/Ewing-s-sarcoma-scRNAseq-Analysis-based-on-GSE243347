@@ -244,3 +244,6 @@ group     N
 ```
 TM574 cells have the lowerst overall value of the ```percentERCC``` , and these are all **CD45neg** cells.  All thses observations suggest that the cluster 16 cells with relatively high expression of MT transcrips are most likely tumor cells in origin.  
 
+# Conclusion(very premature)
+
+So I can go on and on like this but I would like to stop here.  There definitely are more analyses to be done, particularly those described in their publation.  This is a faily decent study with a series of reasonable analysis.  However, I just think their analysis is not quite complete, and they left some analysis that are some unclear and questionable.  Although their manuscript went through a peer review process, I dont know how good the process was, especially publising in a brand new journal even with well established **Caner Research**.  I would definitely come back and  finish the rest of analyis pipelines.  Untill then, I would leave my analysis at this.  
