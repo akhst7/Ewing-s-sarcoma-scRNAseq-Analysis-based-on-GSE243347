@@ -210,8 +210,8 @@ There is one issue with these table; a majority of top20 genes in Cluster 16 are
 
 Quick examination of the Top20 DEG tables cleary points an one issue.  Top 19 DEGs of the cluster 16 is all MT transcripts.  
 ![Rplot01](https://github.com/akhst7/Ewing-s-sarcoma-scRNAseq-Analysis-based-on-GSE243347/assets/3075799/bfabec0b-9e33-41af-9dca-275f682d8b07)
-This raises a possibility that a majority of cells in the cluster 16 are apoptotic.  If this is the case, cells in the cluster must be removed, which is quite reasonable if dealing with cells in  non-cancerous, normal tissues.  However, cells in a cancerous tissue  or any tissues with high metabolic activity (e.g. skeletal and cardiac muscle, and tumor nodule) can express higher than average amount of MT transcripts.  These cells thus represent Ewing tumor cells (or possibly cancer stem cells) that are naturally undergoing high metabolic activaty.  
-Looking at top50 genes of the cluster 16, non-MT transcripts starts poping up.  
+This raises a possibility that a majority of cells in the cluster 16 are apoptotic.  If this is the case, cells in the cluster must be removed, which is quite reasonable if dealing with cells in  non-cancerous, normal tissues.  However, cells in carcinoma tissues  or any tissues with high metabolic activity (e.g. skeletal and cardiac muscle, and tumor nodule) naturally express higher than average amount of MT transcripts.  These cells thus could represent highly metabolic Ewing tumor cells (or possibly Ewing tumor stem cells) .  
+Looking at top50 genes of the cluster 16, non-MT transcripts starts poping up right after top25 DEGs.  
 ```
 > all.markers.MAST.dt[cluster==16, Symbol][1:50]
  [1] "MT-ATP6"         "MT-ND1"          "MT-ND4"          "MT-ND3"          "MT-CYB"          "MT-ND2"          "MT-RNR2"         "MT-CO3"          "MT-ATP8"         "MT-ND4L"         "MT-ATP6-cluster"
@@ -220,4 +220,27 @@ Looking at top50 genes of the cluster 16, non-MT transcripts starts poping up.
 [34] "JAGN1"           "PRRC2C"          "GATAD1"          "XPNPEP3"         "SLC7A8"          "KIAA0430"        "INPPL1"          "RBMS2"           "CTSB"            "BAZ2B"           "CTSD"           
 [45] "PDCL"            "RAPGEF2"         "EDC4"            "PEAK1"           "P3H4"            "MTND4P24"
 ```
+![Rplot](https://github.com/akhst7/Ewing-s-sarcoma-scRNAseq-Analysis-based-on-GSE243347/assets/3075799/e72831d5-63f4-4bc7-af66-89e7075d6ce5)
+Not all DEGs and only top 20 genes appear to be MT in origin, and all the rest is the nuclear transcript.  Furthermore, a heatmap of cells in the cluster 16 vs selected top20 MT genes show splits the cells roughly into two goupes, based on the level of overall top20 MT gene expressions
+![Rplot01](https://github.com/akhst7/Ewing-s-sarcoma-scRNAseq-Analysis-based-on-GSE243347/assets/3075799/7f980db8-d7f8-44c7-9b51-fbed2a64a0ee)
+
+There are 15 different samples that makes up the cluster 16 cell composition, of which TM574 comprises the majority, and dominates compositions of the a top 300 cells with relatively higher expression of top20 MT transcripts.  
+```
+group     N
+    <char> <int>
+ 1:  TM572     2
+ 2:  TM416    15
+ 3:  TM505    73
+ 4:  TM417    15
+ 5:  TM547    15
+ 6:  TM574   119
+ 7:  TM549    19
+ 8:  TM548    12
+ 9:  TM736     3
+10:  TM506    12
+11:  TM564    12
+12:  TM770     2
+13:  TM707     1
+```
+TM574 cells have the lowerst overall value of the ```percentERCC``` , and these are all **CD45neg** cells.  All thses observations suggest that the cluster 16 cells with relatively high expression of MT transcrips are most likely tumor cells in origin.  
 
