@@ -332,7 +332,7 @@ AnnotationHub with 71308 records
   AH116728 | ENCODE_pELS_regions                   
   AH116729 | ENCODE_PLS_regions
 ```
-I am looking for an Ensemble database;
+I am looking at an Ensemble database;
 ```
 > query(ah, c("Ensembl", "Homo sapiens"))
 AnnotationHub with 287 records
