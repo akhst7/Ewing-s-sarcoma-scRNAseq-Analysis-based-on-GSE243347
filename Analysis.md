@@ -63,10 +63,10 @@ data.frame(dims=seq(100, 1000, by=100))->df
 predict(elbow.gam, newdata = df)
 
 > predict(elbow.gam, newdata = df)
-          1           2           3           4           5           6           7           8           9          10          11 
- 1.13387599 -0.06106273 -1.25600146 -2.45094019 -3.64587891 -4.84081764 -6.03575637 -7.23069509 -8.42563382 -9.62057254  4.54860938
+100           200        300         400         500         600         700         800         900         1000      
+ 1.13387599 -0.06106273 -1.25600146 -2.45094019 -3.64587891 -4.84081764 -6.03575637 -7.23069509 -8.42563382 -9.62057254 
 ```
-As number of ```dims``` increases, ```stdev``` decreases, and this is really expected, however, right around PC 100 and beyond, ```stdev``` gets negative values, and ```stdev``` never gets the negative value.  Strage.  
+As number of ```dims``` increases, ```stdev``` decreases, and this is to be expected.  
 
 Once PCA is done, the rest of the step is pretty straightforward.  A following step could be done in any order but lets' figure out number of potential clusters.  The first thing to do is to figure out ```cell neighbors```.
 ```
